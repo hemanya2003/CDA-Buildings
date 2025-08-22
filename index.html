@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <title>3D Buildings Map</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <script src="https://api.maptiler.com/maps/streets/2.0.0/maptiler.js"></script>
-    <link href="https://api.maptiler.com/maps/streets/2.0.0/maptiler.css" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/maplibre-gl@2.5.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.5.0/dist/maplibre-gl.css" rel="stylesheet"/>
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -14,7 +14,7 @@
 <body>
 <div id="map"></div>
 <script>
-    // Initialize Map
+    // Initialize MapLibre map
     const map = new maplibregl.Map({
         container: 'map',
         style: `https://api.maptiler.com/maps/streets/style.json?key=6TYA91HhQPjMXU651wBM`,
@@ -25,18 +25,18 @@
     });
 
     map.on('load', () => {
-        // Load buildings from GitHub raw URL
+        // Add your GitHub-hosted GeoJSON
         map.addSource('buildings', {
-            'type': 'geojson',
-            'data': 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
         });
 
         // Add 3D extrusion layer
         map.addLayer({
-            'id': '3d-buildings',
-            'type': 'fill-extrusion',
-            'source': 'buildings',
-            'paint': {
+            id: '3d-buildings',
+            type: 'fill-extrusion',
+            source: 'buildings',
+            paint: {
                 'fill-extrusion-color': '#ff6600',
                 'fill-extrusion-height': ['get', 'HEIGHT'],
                 'fill-extrusion-base': 0,
