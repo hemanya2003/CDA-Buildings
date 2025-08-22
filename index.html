@@ -44,20 +44,27 @@
     });
 
     map.on('load', () => {
-        // Add buildings GeoJSON from GitHub
+        // Add buildings GeoJSON
         map.addSource('buildings', {
             type: 'geojson',
-            data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson' // Use raw GitHub URL
+            data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
         });
 
-        // Add 3D extrusion layer
+        // Add 3D extrusion layer with color by height
         map.addLayer({
             id: 'buildings-3d',
             type: 'fill-extrusion',
             source: 'buildings',
             paint: {
-                'fill-extrusion-color': '#FF6F61',
-                'fill-extrusion-height': ['get', 'HEIGHT'], // Use uppercase HEIGHT if your GeoJSON has it
+                'fill-extrusion-color': [
+                    'step',
+                    ['get', 'HEIGHT'],
+                    'royalblue',  // 25–31
+                    31, 'lightgrey',  // 31–37
+                    37, 'lightblue',  // 37–43
+                    43, 'red'         // 43+
+                ],
+                'fill-extrusion-height': ['*', ['get', 'HEIGHT'], 2], // scaled for visibility
                 'fill-extrusion-base': 0,
                 'fill-extrusion-opacity': 0.9
             }
