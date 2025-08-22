@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>3D Buildings Visualization - Sector6</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; }
@@ -13,12 +14,9 @@
 <body>
 <div id="map"></div>
 
+<!-- MapLibre GL JS -->
 <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 <script>
-const MIN_HEIGHT = 25.4807;   // lowest building
-const MAX_HEIGHT = 46.9226;   // tallest building
-const MAX_EXTRUSION = 18;     // max extrusion for G+5
-
 const map = new maplibregl.Map({
     container: 'map',
     style: {
@@ -31,63 +29,75 @@ const map = new maplibregl.Map({
             }
         },
         layers: [
-            { id: 'osm-layer', type: 'raster', source: 'osm-tiles' }
+            {
+                id: 'osm-layer',
+                type: 'raster',
+                source: 'osm-tiles'
+            }
         ]
     },
-    center: [85.84, 20.47],
+    center: [85.84, 20.47], // Sector6 coordinates
     zoom: 17,
     pitch: 60,
     bearing: -17.6
 });
 
 map.on('load', () => {
+    // Add buildings GeoJSON
     map.addSource('buildings', {
         type: 'geojson',
         data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
     });
 
-    // 3D buildings layer with proportional height + floor-based smooth colors
+    // Add 3D extrusion layer with realistic heights using CASE
     map.addLayer({
         id: 'buildings-3d',
         type: 'fill-extrusion',
         source: 'buildings',
         paint: {
+            // Color by HEIGHT/floor
+            'fill-extrusion-color': [
+                'case',
+                ['<=', ['get', 'HEIGHT'], 34.2136], 'royalblue',  // G+1
+                ['<=', ['get', 'HEIGHT'], 39.1755], 'lightgrey',  // G+2
+                ['<=', ['get', 'HEIGHT'], 40.2938], 'lightblue',  // G+3
+                ['<=', ['get', 'HEIGHT'], 43.054699], 'orange',   // G+4
+                ['<=', ['get', 'HEIGHT'], 46.9226], 'red',        // G+5
+                'purple' // fallback
+            ],
+            // Extrusion height in meters
             'fill-extrusion-height': [
-                '*',
-                ['/', ['-', ['get', 'HEIGHT'], MIN_HEIGHT], MAX_HEIGHT - MIN_HEIGHT],
-                MAX_EXTRUSION
+                'case',
+                ['<=', ['get', 'HEIGHT'], 34.2136], 6,    // G+1
+                ['<=', ['get', 'HEIGHT'], 39.1755], 9,    // G+2
+                ['<=', ['get', 'HEIGHT'], 40.2938], 12,   // G+3
+                ['<=', ['get', 'HEIGHT'], 43.054699], 15, // G+4
+                ['<=', ['get', 'HEIGHT'], 46.9226], 18,   // G+5
+                6 // fallback
             ],
             'fill-extrusion-base': 0,
-            'fill-extrusion-opacity': 0.9,
-            'fill-extrusion-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'HEIGHT'],
-                MIN_HEIGHT, 'royalblue',      // G+1 start
-                34.2136, 'royalblue',         // G+1 end
-                34.2136, 'lightgrey',         // G+2 start
-                39.1755, 'lightgrey',         // G+2 end
-                39.1755, 'lightblue',         // G+3 start
-                40.2938, 'lightblue',         // G+3 end
-                40.2938, 'orange',            // G+4 start
-                43.054699, 'orange',          // G+4 end
-                43.054699, 'red',             // G+5 start
-                MAX_HEIGHT, 'red'             // G+5 end
-            ]
+            'fill-extrusion-opacity': 0.9
         }
     });
 
-    // Popup showing HEIGHT and approximate floors
+    // Add popup on click showing HEIGHT and floors
     map.on('click', 'buildings-3d', (e) => {
         const height = e.features[0].properties.HEIGHT;
-        const floors = Math.round(((height - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT)) * 5) + 1;
+        let floors = '';
+        if(height <= 34.2136) floors = 'G+1';
+        else if(height <= 39.1755) floors = 'G+2';
+        else if(height <= 40.2938) floors = 'G+3';
+        else if(height <= 43.054699) floors = 'G+4';
+        else if(height <= 46.9226) floors = 'G+5';
+        else floors = 'Unknown';
+
         new maplibregl.Popup()
             .setLngLat(e.lngLat)
-            .setHTML(`<strong>HEIGHT:</strong> ${height.toFixed(2)} m<br><strong>Approx Floors:</strong> G+${floors}`)
+            .setHTML(`<strong>HEIGHT:</strong> ${height} m<br><strong>Floors:</strong> ${floors}`)
             .addTo(map);
     });
 
-    // Cursor pointer on hover
+    // Change cursor to pointer on hover
     map.on('mouseenter', 'buildings-3d', () => map.getCanvas().style.cursor = 'pointer');
     map.on('mouseleave', 'buildings-3d', () => map.getCanvas().style.cursor = '');
 });
