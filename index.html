@@ -1,44 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>3D Buildings Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://unpkg.com/maplibre-gl@2.5.0/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@2.5.0/dist/maplibre-gl.css" rel="stylesheet"/>
+    <meta charset="UTF-8">
+    <title>3D Buildings Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
+        body, html { margin: 0; padding: 0; height: 100%; }
+        #map { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
 <div id="map"></div>
+
+<!-- MapLibre GL JS -->
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 <script>
-    // Initialize MapLibre map
+    // Initialize map
     const map = new maplibregl.Map({
         container: 'map',
-        style: `https://api.maptiler.com/maps/streets/style.json?key=6TYA91HhQPjMXU651wBM`,
-        center: [78.47, 20.47], // Change to your area coordinates
-        zoom: 16,
+        style: {
+            version: 8,
+            sources: {
+                'osm-tiles': {
+                    type: 'raster',
+                    tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                    tileSize: 256
+                }
+            },
+            layers: [
+                {
+                    id: 'osm-layer',
+                    type: 'raster',
+                    source: 'osm-tiles'
+                }
+            ]
+        },
+        center: [85.828, 20.46], // Sector6 coordinates
+        zoom: 17,
         pitch: 60,
-        bearing: -17
+        bearing: -17.6
     });
 
     map.on('load', () => {
-        // Add your GitHub-hosted GeoJSON
+        // Add buildings GeoJSON from GitHub
         map.addSource('buildings', {
             type: 'geojson',
-            data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
+            data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson' // Use raw GitHub URL
         });
 
         // Add 3D extrusion layer
         map.addLayer({
-            id: '3d-buildings',
+            id: 'buildings-3d',
             type: 'fill-extrusion',
             source: 'buildings',
             paint: {
-                'fill-extrusion-color': '#ff6600',
-                'fill-extrusion-height': ['get', 'HEIGHT'],
+                'fill-extrusion-color': '#FF6F61',
+                'fill-extrusion-height': ['get', 'HEIGHT'], // Use uppercase HEIGHT if your GeoJSON has it
                 'fill-extrusion-base': 0,
                 'fill-extrusion-opacity': 0.9
             }
