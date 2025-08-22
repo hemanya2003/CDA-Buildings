@@ -15,9 +15,9 @@
 
 <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 <script>
-const MIN_HEIGHT = 25.4807;   // minimum building height
-const MAX_HEIGHT = 46.9226;   // maximum building height
-const MAX_EXTRUSION = 18;     // max extrusion height for G+5
+const MIN_HEIGHT = 25.4807;   // lowest building
+const MAX_HEIGHT = 46.9226;   // tallest building
+const MAX_EXTRUSION = 18;     // max extrusion for G+5
 
 const map = new maplibregl.Map({
     container: 'map',
@@ -46,13 +46,12 @@ map.on('load', () => {
         data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
     });
 
-    // 3D buildings layer with proportional height + smooth color gradient
+    // 3D buildings layer with proportional height + floor-based smooth colors
     map.addLayer({
         id: 'buildings-3d',
         type: 'fill-extrusion',
         source: 'buildings',
         paint: {
-            // Proportional extrusion height
             'fill-extrusion-height': [
                 '*',
                 ['/', ['-', ['get', 'HEIGHT'], MIN_HEIGHT], MAX_HEIGHT - MIN_HEIGHT],
@@ -60,16 +59,20 @@ map.on('load', () => {
             ],
             'fill-extrusion-base': 0,
             'fill-extrusion-opacity': 0.9,
-            // Smooth color gradient based on HEIGHT
             'fill-extrusion-color': [
                 'interpolate',
                 ['linear'],
                 ['get', 'HEIGHT'],
-                MIN_HEIGHT, 'royalblue',
-                30, 'lightblue',
-                36, 'purple',
-                40, 'orange',
-                MAX_HEIGHT, 'red'
+                MIN_HEIGHT, 'royalblue',      // G+1 start
+                34.2136, 'royalblue',         // G+1 end
+                34.2136, 'lightgrey',         // G+2 start
+                39.1755, 'lightgrey',         // G+2 end
+                39.1755, 'lightblue',         // G+3 start
+                40.2938, 'lightblue',         // G+3 end
+                40.2938, 'orange',            // G+4 start
+                43.054699, 'orange',          // G+4 end
+                43.054699, 'red',             // G+5 start
+                MAX_HEIGHT, 'red'             // G+5 end
             ]
         }
     });
