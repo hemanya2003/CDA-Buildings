@@ -63,11 +63,27 @@
                     37, 'lightblue',  // 37–43
                     43, 'red'         // 43+
                 ],
-                // Scale HEIGHT for visual proportionality
                 'fill-extrusion-height': ['*', ['get', 'HEIGHT'], 0.6], 
                 'fill-extrusion-base': 0,
                 'fill-extrusion-opacity': 0.9
             }
+        });
+
+        // Add popup on click
+        map.on('click', 'buildings-3d', (e) => {
+            const height = e.features[0].properties.HEIGHT;
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`<strong>HEIGHT:</strong> ${height} m`)
+                .addTo(map);
+        });
+
+        // Change cursor to pointer when hovering over buildings
+        map.on('mouseenter', 'buildings-3d', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'buildings-3d', () => {
+            map.getCanvas().style.cursor = '';
         });
     });
 </script>
