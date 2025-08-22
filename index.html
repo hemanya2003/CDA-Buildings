@@ -49,29 +49,31 @@ map.on('load', () => {
         data: 'https://raw.githubusercontent.com/hemanya2003/CDA-Buildings/main/buildings.geojson'
     });
 
-    // Add 3D extrusion layer with realistic heights
+    // Add 3D extrusion layer with realistic heights using CASE
     map.addLayer({
         id: 'buildings-3d',
         type: 'fill-extrusion',
         source: 'buildings',
         paint: {
+            // Color by HEIGHT/floor
             'fill-extrusion-color': [
-                'step',
-                ['get', 'HEIGHT'],
-                'royalblue', 34.2136,   // G+1
-                'lightgrey', 39.1755,   // G+2
-                'lightblue', 40.2938,   // G+3
-                'orange', 43.054699,    // G+4
-                'red'                   // G+5
+                'case',
+                ['<=', ['get', 'HEIGHT'], 34.2136], 'royalblue',  // G+1
+                ['<=', ['get', 'HEIGHT'], 39.1755], 'lightgrey',  // G+2
+                ['<=', ['get', 'HEIGHT'], 40.2938], 'lightblue',  // G+3
+                ['<=', ['get', 'HEIGHT'], 43.054699], 'orange',   // G+4
+                ['<=', ['get', 'HEIGHT'], 46.9226], 'red',        // G+5
+                'purple' // fallback
             ],
+            // Extrusion height in meters
             'fill-extrusion-height': [
                 'case',
-                ['<=', ['get', 'HEIGHT'], 34.2136], 6,     // G+1
-                ['<=', ['get', 'HEIGHT'], 39.1755], 9,     // G+2
-                ['<=', ['get', 'HEIGHT'], 40.2938], 12,    // G+3
-                ['<=', ['get', 'HEIGHT'], 43.054699], 15,  // G+4
-                ['<=', ['get', 'HEIGHT'], 46.9226], 18,    // G+5
-                6                                           // fallback
+                ['<=', ['get', 'HEIGHT'], 34.2136], 6,    // G+1
+                ['<=', ['get', 'HEIGHT'], 39.1755], 9,    // G+2
+                ['<=', ['get', 'HEIGHT'], 40.2938], 12,   // G+3
+                ['<=', ['get', 'HEIGHT'], 43.054699], 15, // G+4
+                ['<=', ['get', 'HEIGHT'], 46.9226], 18,   // G+5
+                6 // fallback
             ],
             'fill-extrusion-base': 0,
             'fill-extrusion-opacity': 0.9
